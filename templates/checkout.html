@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 50px auto; padding: 0 20px;">
+    
+    <h2 style="margin-bottom: 30px; font-weight: 800;">Checkout</h2>
+
+    <form method="POST" action="{% url 'checkout' %}" class="checkout-grid">
+        {% csrf_token %}
+
+        <div class="shipping-section">
+            <h4 class="section-title">Shipping Address</h4>
+            
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="{{ user.first_name }} {{ user.last_name }}" required placeholder="John Doe">
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" value="{{ user.delivery_profile.phone|default:'' }}" required placeholder="123-456-7890">
+            </div>
+
+            <div class="form-group">
+                <label>Address (House No, Street)</label>
+                <input type="text" name="address" value="{{ user.delivery_profile.address|default:'' }}" required placeholder="123 Main St, Apt 4B">
+            </div>
+
+            <div class="row">
+                <div class="form-group half">
+                    <label>City</label>
+                    <input type="text" name="city" value="{{ user.delivery_profile.city|default:'' }}" required placeholder="New York">
+                </div>
+                <div class="form-group half">
+                    <label>Zip Code</label>
+                    <input type="text" name="zip_code" value="{{ user.delivery_profile.zip_code|default:'' }}" required placeholder="10001">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>State / Province</label>
+                <input type="text" name="state" value="{{ user.delivery_profile.state|default:'' }}" required placeholder="NY">
+            </div>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-card">
+                <h3>Order Summary</h3>
+                
+                <div class="items-list">
+                    {% for item in cart_items %}
+                    <div class="summary-item">
+                        <div class="item-info">
+                            <span class="name">{{ item.product.name }}</span>
+                            <span class="meta">x{{ item.quantity }} | {{ item.variant.size }}</span>
+                        </div>
+                        <span class="price">${{ item.total_cost }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <hr class="divider">
+
+                <div class="total-row">
+                    <span>Total Amount</span>
+                    <span>${{ total_price }}</span>
+                </div>
+
+                <button type="submit" class="btn-pay">
+                    Place Order & Pay
+                </button>
+                
+                <p style="font-size: 0.8rem; color: #888; margin-top: 15px; text-align: center;">
+                    <i class="fas fa-lock"></i> Secure Checkout
+                </p>
+            </div>
+        </div>
+
+    </form>
+    </div>
+
+<style>
+    .checkout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
+    
+    /* LEFT SECTION */
+    .shipping-section { background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee; }
+    .section-title { margin-bottom: 20px; font-size: 1.1rem; text-transform: uppercase; color: #999; font-weight: bold; letter-spacing: 1px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: 600; color: #333; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+    .form-group input:focus { border-color: #000; outline: none; }
+
+    .row { display: flex; gap: 20px; }
+    .half { flex: 1; }
+
+    /* RIGHT SECTION */
+    .summary-card { background: #f9f9f9; padding: 30px; border-radius: 8px; position: sticky; top: 100px; }
+    .summary-card h3 { margin-top: 0; margin-bottom: 20px; }
+    
+    .items-list { margin-bottom: 20px; max-height: 300px; overflow-y: auto; }
+    .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; }
+    .item-info { display: flex; flex-direction: column; }
+    .item-info .name { font-weight: 600; }
+    .item-info .meta { font-size: 0.8rem; color: #666; }
+    
+    .divider { border: 0; border-top: 1px solid #ddd; margin: 20px 0; }
+    
+    .total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.3rem; margin-bottom: 25px; }
+
+    .btn-pay { width: 100%; background: #000; color: #fff; padding: 15px; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-pay:hover { background: #333; }
+
+    @media (max-width: 768px) {
+        .checkout-grid { grid-template-columns: 1fr; }
+        .row { flex-direction: column; gap: 0; }
+    }
+</style>
+{% endblock %}

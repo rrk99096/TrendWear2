@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} | TrendWear</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- GLOBAL STYLES --- */
+        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: #f9f9f9; padding-top: 80px; }
+        
+        /* NAVBAR (Simplified for consistency) */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: fixed; top: 0; width: 100%; box-sizing: border-box; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: bold; color: #1a1a1a; }
+        .logo span { color: #d4af37; } /* Gold accent */
+        .nav-links { list-style: none; display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #1a1a1a; font-weight: 500; }
+        .nav-icons a { color: #1a1a1a; font-size: 18px; }
+
+        /* --- PRODUCT LAYOUT --- */
+        .product-wrapper { max-width: 1100px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
+
+        /* GALLERY */
+        .gallery-section { display: flex; gap: 20px; }
+        .thumbnails { display: flex; flex-direction: column; gap: 10px; }
+        .thumb-img { width: 60px; height: 80px; object-fit: cover; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; transition: 0.2s; }
+        .thumb-img:hover, .thumb-img.active { border-color: #1a1a1a; }
+/* FIXED IMAGE STYLES */
+.main-image-box { 
+    flex-grow: 1; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    background: #fff; /* White background for the empty space */
+    border: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 500px; /* Fixed height container */
+}
+
+#mainImage { 
+    width: 100%; 
+    height: 100%; 
+    max-height: 500px; /* Prevents it from being too huge */
+    object-fit: contain; /* <--- KEY FIX: Shows the WHOLE image, no cropping */
+    display: block; 
+}
+        /* INFO SECTION */
+        .info-section { background: white; padding: 40px; border-radius: 8px; height: fit-content; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .product-title { font-size: 2rem; margin: 0 0 10px 0; color: #1a1a1a; }
+        
+        /* PRICE AREA */
+        .product-price { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .sale-price-row { font-size: 1.8rem; color: #d4af37; font-weight: bold; }
+        .rent-price-row { font-size: 1rem; color: #666; margin-top: 5px; }
+
+        .product-desc { color: #555; margin-bottom: 30px; line-height: 1.6; }
+
+        /* SELECTION BUTTONS */
+        .option-group { margin-bottom: 20px; }
+        .label { display: block; font-weight: bold; margin-bottom: 8px; color: #1a1a1a; font-size: 0.9rem; }
+        .selection-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        
+        .option-btn {
+            border: 1px solid #ddd; background: white; padding: 10px 20px; cursor: pointer;
+            border-radius: 4px; font-size: 0.9rem; transition: 0.2s; min-width: 60px; text-align: center;
+        }
+        .option-btn:hover { border-color: #1a1a1a; }
+        .option-btn.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+        .option-btn.disabled { opacity: 0.5; cursor: not-allowed; background: #f9f9f9; color: #ccc; }
+
+        /* DATE PICKER (Dark Theme) */
+        .rental-box { margin-top: 20px; padding: 20px; background: #1a1a1a; border-radius: 6px; color: white; }
+        .rental-box h4 { margin: 0 0 10px 0; color: #d4af37; font-size: 1.1rem; }
+        .date-input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #444; background: #333; color: white; border-radius: 4px; box-sizing: border-box; }
+        
+        .total-box { display: none; background: #fdfdfd; padding: 15px; margin-top: 20px; border-left: 4px solid #d4af37; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        /* ACTION BUTTONS */
+        .btn-row { display: flex; gap: 15px; margin-top: 30px; }
+        .btn-action { flex: 1; padding: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 4px; transition: 0.2s; font-size: 1rem; }
+        .btn-black { background: #1a1a1a; color: white; }
+        .btn-black:hover { background: #333; }
+        .btn-outline { background: white; border: 2px solid #1a1a1a; color: #1a1a1a; }
+        .btn-outline:hover { background: #f4f4f4; }
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">TREND<span>WEAR</span></div>
+    <ul class="nav-links">
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'view_cart' %}">Bag</a></li>
+    </ul>
+    <div class="nav-icons">
+        <a href="{% url 'view_cart' %}"><i class="fas fa-shopping-bag"></i></a>
+    </div>
+</nav>
+    
+<div class="product-wrapper">
+    <div class="gallery-section">
+        <div class="thumbnails">
+            {% if images %}
+                {% for img in images %}
+                <img src="{{ img.image.url }}" class="thumb-img {% if forloop.first %}active{% endif %}" onclick="changeImage(this, '{{ img.image.url }}')">
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="main-image-box">
+            {% if product.thumbnail %}
+            <img id="mainImage" src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
+            {% else %}
+            <div style="padding:100px; text-align:center; background:#eee; color:#aaa;">No Image Available</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <form class="info-section" method="POST" action="{% url 'add_to_cart' product.id %}" onsubmit="return validateForm()">
+        {% csrf_token %}
+        
+        <input type="hidden" name="variant_id" id="selected-variant-id" required>
+        <input type="hidden" name="quantity" value="1">
+
+        <h1 class="product-title">{{ product.name }}</h1>
+        
+        <div class="product-price">
+            <div class="sale-price-row">
+                Buy: $<span id="display-sale-price">--</span>
+            </div>
+            {% if product.is_for_rent %}
+            <div class="rent-price-row">
+                Rent: $<span id="display-rent-price">--</span> / day
+            </div>
+            
+            <div id="rental-total-box" class="total-box">
+                <div style="font-size: 0.8rem; text-transform: uppercase; color: #666; font-weight: bold;">Estimated Rental Cost</div>
+                <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 5px;">
+                    <span id="display-total-price" style="font-size: 1.4rem; color: #d4af37; font-weight: bold;">$0.00</span>
+                    <span id="rental-days-count" style="color: #666;">(0 days)</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <p class="product-desc">{{ product.description }}</p>
+
+        <div class="option-group">
+            <span class="label">Select Size</span>
+            <div class="selection-grid" id="size-container"></div>
+        </div>
+
+        <div class="option-group">
+            <span class="label">Available Colors</span>
+            <div class="selection-grid" id="color-container"></div>
+        </div>
+
+        {% if product.is_for_rent %}
+        <div class="rental-box">
+            <h4><i class="far fa-calendar-alt"></i> Book Your Dates</h4>
+            <p style="font-size: 12px; color: #aaa; margin: 0 0 15px 0;">Note: Bookings must be made at least 2 days in advance.</p>
+
+            <label style="font-size: 0.9rem;">Start Date:</label>
+            <input type="date" name="start_date" id="start_date" class="date-input">
+
+            <br><br>
+
+            <label style="font-size: 0.9rem;">End Date:</label>
+            <input type="date" name="end_date" id="end_date" class="date-input">
+        </div>
+        {% endif %}
+
+        <div class="btn-row">
+            {% if product.is_for_rent %}
+            <button type="submit" name="action" value="rent" class="btn-action btn-outline">RENT IT</button>
+            {% endif %}
+            
+            {% if product.is_for_sale %}
+            <button type="submit" name="action" value="buy" class="btn-action btn-black">BUY NOW</button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<script>
+    // 1. Data Source: Load Django data into JS array
+    const allVariants = [
+        {% for v in product.variants.all %}
+        {
+            id: "{{ v.id }}",
+            color: "{{ v.color }}",
+            size: "{{ v.size }}",
+            sale: "{{ v.sale_price }}",
+            rent: "{{ v.rent_price_per_day }}",
+            stock: {{ v.stock_quantity }}
+        },
+        {% endfor %}
+    ];
+
+    let currentRentPrice = 0;
+
+    // 2. Initialize Page
+    document.addEventListener('DOMContentLoaded', function() {
+        renderSizeButtons(); // Build the buttons
+        setupDateRestrictions(); // Apply the "2-day advance" rule
+        
+        // Listen for date changes to update price
+        const startInput = document.getElementById('start_date');
+        const endInput = document.getElementById('end_date');
+        if(startInput) startInput.addEventListener('change', calculateTotal);
+        if(endInput) endInput.addEventListener('change', calculateTotal);
+    });
+
+    // 3. Rental Logic: "Today + 2 Days"
+    function setupDateRestrictions() {
+        var startInput = document.getElementById('start_date');
+        var endInput = document.getElementById('end_date');
+
+        if (!startInput || !endInput) return; // Exit if not a rental product
+
+        var today = new Date();
+        today.setDate(today.getDate() + 2); // Add 2 days padding
+
+        // Format to YYYY-MM-DD
+        var minDate = today.toISOString().split('T')[0];
+
+        // Apply restriction
+        startInput.setAttribute('min', minDate);
+        endInput.setAttribute('min', minDate);
+
+        // Logic: When Start Date changes, End Date must be >= Start Date
+        startInput.addEventListener('change', function() {
+            endInput.setAttribute('min', this.value);
+            if (endInput.value && endInput.value < this.value) {
+                endInput.value = this.value; 
+            }
+            calculateTotal();
+        });
+    }
+
+    // 4. Render Size Buttons
+    function renderSizeButtons() {
+        const container = document.getElementById('size-container');
+        container.innerHTML = '';
+        
+        // Get unique sizes
+        const sizes = [...new Set(allVariants.map(v => v.size))];
+
+        sizes.forEach(size => {
+            const btn = document.createElement('button');
+            btn.type = "button"; 
+            btn.className = 'option-btn';
+            btn.innerText = size;
+            btn.onclick = () => selectSize(size, btn);
+            container.appendChild(btn);
+        });
+
+        // Auto-select first size
+        if(sizes.length > 0) {
+            selectSize(sizes[0], container.firstChild);
+        }
+    }
+
+    // 5. Select Size -> Filter Colors
+    function selectSize(size, btnElement) {
+        document.querySelectorAll('#size-container .option-btn').forEach(b => b.classList.remove('active'));
+        if(btnElement) btnElement.classList.add('active');
+        renderColorButtons(size);
+    }
+
+    // 6. Render Color Buttons
+    function renderColorButtons(size) {
+        const container = document.getElementById('color-container');
+        container.innerHTML = '';
+
+        const compatibleVariants = allVariants.filter(v => v.size === size);
+
+        compatibleVariants.forEach(v => {
+            const btn = document.createElement('button');
+            btn.type = "button"; 
+            btn.className = 'option-btn';
+            btn.innerText = v.color;
+            
+            // Disable if out of stock
+            if (v.stock < 1) {
+                btn.classList.add('disabled');
+                btn.disabled = true;
+                btn.title = "Out of Stock";
+            } else {
+                btn.onclick = () => selectColor(v, btn);
+            }
+            container.appendChild(btn);
+        });
+
+        // Auto-select first available color
+        const available = compatibleVariants.filter(v => v.stock > 0);
+        if(available.length > 0) {
+            const buttons = Array.from(container.children);
+            const targetBtn = buttons.find(b => b.innerText === available[0].color);
+            if(targetBtn) selectColor(available[0], targetBtn);
+        } else {
+             // Reset if nothing available
+             document.getElementById('selected-variant-id').value = "";
+             document.getElementById('display-sale-price').innerText = "--";
+             document.getElementById('display-rent-price').innerText = "--";
+        }
+    }
+
+    // 7. Select Color -> Update UI & ID
+    function selectColor(variant, btnElement) {
+        document.getElementById('selected-variant-id').value = variant.id;
+        currentRentPrice = variant.rent;
+
+        document.querySelectorAll('#color-container .option-btn').forEach(b => b.classList.remove('active'));
+        if(btnElement) btnElement.classList.add('active');
+
+        // Update displayed prices
+        const saleDisplay = document.getElementById('display-sale-price');
+        const rentDisplay = document.getElementById('display-rent-price');
+        
+        if(saleDisplay) saleDisplay.innerText = variant.sale;
+        if(rentDisplay) rentDisplay.innerText = variant.rent;
+
+        calculateTotal(); 
+    }
+
+    // 8. Calculate Total Rental Price
+    function calculateTotal() {
+        const startDateVal = document.getElementById('start_date');
+        const endDateVal = document.getElementById('end_date');
+        const totalBox = document.getElementById('rental-total-box');
+        
+        if (startDateVal && endDateVal && startDateVal.value && endDateVal.value && currentRentPrice) {
+            const start = new Date(startDateVal.value);
+            const end = new Date(endDateVal.value);
+            const diffTime = end - start;
+            
+            // Ensure minimum 1 day if start == end
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            if (diffDays === 0) diffDays = 1; 
+
+            if (diffDays > 0) {
+                const totalCost = diffDays * parseFloat(currentRentPrice);
+                totalBox.style.display = 'block';
+                document.getElementById('display-total-price').innerText = "$" + totalCost.toFixed(2);
+                document.getElementById('rental-days-count').innerText = "(" + diffDays + " days)";
+            } else {
+                totalBox.style.display = 'none';
+            }
+        }
+    }
+
+    // 9. Form Validation
+    function validateForm() {
+        const variantId = document.getElementById('selected-variant-id').value;
+        if (!variantId) {
+            alert("Please select a valid Size and Color.");
+            return false; 
+        }
+        return true; 
+    }
+
+    // 10. Image Gallery Switcher
+    function changeImage(thumb, src) {
+        const mainImg = document.getElementById('mainImage');
+        if (mainImg) mainImg.src = src;
+        document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 50px auto; padding: 0 20px;">
+    
+    <h2 style="margin-bottom: 30px; font-weight: 800; color: #1a1a1a;">My Orders</h2>
+
+    <div class="labels-row">
+        <div>Order Info</div>
+        <div>Customer</div>
+        <div>Total Price</div>
+        <div style="text-align: right;">Status</div>
+    </div>
+
+    <div class="accordion-container">
+        {% for order in orders %}
+        <div class="order-card">
+            
+            <div class="order-header" onclick="toggleOrder(this)">
+                <div class="header-col">
+                    <span class="order-id">#{{ order.id }}</span>
+                    <span class="order-date">{{ order.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="header-col mobile-hide">
+                    <span class="customer-name">{{ order.user.first_name }} {{ order.user.last_name }}</span>
+                </div>
+                <div class="header-col">
+                    <span class="order-total">${{ order.total_price }}</span>
+                    <span class="item-count">{{ order.sale_items.count|add:order.rent_items.count }} items</span>
+                </div>
+                <div class="header-col right-align">
+                    <span class="status-badge {{ order.delivery_info.status|lower|cut:" " }}">
+                        {{ order.delivery_info.status|default:"Pending" }}
+                    </span>
+                    <i class="fas fa-chevron-down arrow-icon"></i>
+                </div>
+            </div>
+
+            <div class="order-body">
+                <div class="body-content">
+
+                    <h5 class="section-title">Items Ordered</h5>
+                    
+                    <div class="product-list">
+                        {% for item in order.sale_items.all %}
+                        <div class="item-row">
+                            <div class="item-img">
+                                {% if item.variant.product.thumbnail %}
+                                    <img src="{{ item.variant.product.thumbnail.url }}" alt="img">
+                                {% else %}
+                                    <div class="no-img"></div>
+                                {% endif %}
+                            </div>
+                            <div class="item-info">
+                                <div class="item-name">{{ item.variant.product.name }}</div>
+                                <div class="item-meta">Size: {{ item.variant.size }} | Color: {{ item.variant.color }}</div>
+                                <div class="badge purchase">Purchased</div>
+                            </div>
+                            <div class="item-qty">x{{ item.quantity }}</div>
+                            <div class="item-price">${{ item.total_price }}</div>
+                        </div>
+                        {% endfor %}
+
+                        {% for item in order.rent_items.all %}
+                        <div class="item-row">
+                            <div class="item-img">
+                                {% if item.variant.product.thumbnail %}
+                                    <img src="{{ item.variant.product.thumbnail.url }}" alt="img">
+                                {% else %}
+                                    <div class="no-img"></div>
+                                {% endif %}
+                            </div>
+                            <div class="item-info">
+                                <div class="item-name">{{ item.variant.product.name }}</div>
+                                <div class="item-meta">
+                                    Size: {{ item.variant.size }} | 
+                                    <span style="color:#d4af37; font-weight:bold;">{{ item.start_date|date:"M d" }} - {{ item.end_date|date:"M d" }}</span>
+                                </div>
+                                <div class="badge rent">Rental</div>
+                            </div>
+                            <div class="item-qty">x{{ item.quantity }}</div>
+                            <div class="item-price">${{ item.total_price }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="info-grid">
+                        
+                        <div class="info-box">
+                            <h5 class="section-title">Shipping Details</h5>
+                            <p><strong>{{ order.user.first_name }} {{ order.user.last_name }}</strong></p>
+                            <p>{{ order.user.email }}</p>
+                            <p>Phone: {{ order.user.delivery_profile.phone|default:"Not Provided" }}</p>
+                        </div>
+
+                        <div class="info-box">
+                            <h5 class="section-title">Delivery Status</h5>
+                            
+                            {% if order.delivery_info.status == 'Out for Delivery' and order.delivery_info.delivery_boy %}
+                                <div class="agent-card">
+                                    <div class="agent-icon"><i class="fas fa-motorcycle"></i></div>
+                                    <div class="agent-details">
+                                        <div style="font-weight: bold; color: #004085;">Out for Delivery</div>
+                                        <div>Agent: {{ order.delivery_info.delivery_boy.user.first_name }}</div>
+                                        <div>Vehicle: {{ order.delivery_info.delivery_boy.vehicle_number }}</div>
+                                        <div class="phone-link">
+                                            <i class="fas fa-phone"></i> {{ order.delivery_info.delivery_boy.phone }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p>Current Status: <strong>{{ order.delivery_info.status }}</strong></p>
+                                <p style="font-size: 0.85rem; color: #888;">
+                                    {% if order.delivery_info.status == 'Pending' %}
+                                        We are processing your order.
+                                    {% elif order.delivery_info.status == 'Delivered' %}
+                                        Package delivered on {{ order.delivered_at|date:"M d, Y" }}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div style="text-align: center; color: #999; padding: 50px;">
+                <p>No orders found.</p>
+                <a href="{% url 'home' %}" class="btn btn-black">Start Shopping</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleOrder(header) {
+        const card = header.parentElement;
+        const body = card.querySelector('.order-body');
+        card.classList.toggle('active');
+        if (card.classList.contains('active')) {
+            body.style.maxHeight = body.scrollHeight + "px";
+        } else {
+            body.style.maxHeight = null;
+        }
+    }
+</script>
+
+<style>
+    /* HEADER LABELS */
+    .labels-row {
+        display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
+        padding: 0 25px; margin-bottom: 10px; font-size: 0.8rem;
+        color: #999; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;
+    }
+
+    /* CARD STRUCTURE */
+    .order-card { background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+    .order-card.active { border-color: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+
+    /* HEADER BAR */
+    .order-header { 
+        display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
+        padding: 20px 25px; cursor: pointer; align-items: center; background: #fff; transition: 0.2s;
+    }
+    .order-header:hover { background: #f9f9f9; }
+
+    .header-col { display: flex; flex-direction: column; justify-content: center; }
+    .order-id { font-weight: 800; font-size: 1rem; color: #1a1a1a; }
+    .order-date { font-size: 0.8rem; color: #888; margin-top: 2px; }
+    .customer-name { font-weight: 600; color: #333; }
+    .order-total { font-weight: 700; font-size: 1rem; }
+    .item-count { font-size: 0.8rem; color: #888; }
+    .right-align { align-items: flex-end; }
+
+    /* STATUS BADGES */
+    .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+    .status-badge.pending { background: #fff3cd; color: #856404; }
+    .status-badge.outfordelivery { background: #cce5ff; color: #004085; }
+    .status-badge.delivered { background: #d4edda; color: #155724; }
+    .status-badge.failed { background: #f8d7da; color: #721c24; }
+
+    .arrow-icon { margin-top: 8px; font-size: 0.8rem; color: #ccc; transition: 0.3s; }
+    .order-card.active .arrow-icon { transform: rotate(180deg); color: #000; }
+
+    /* BODY AREA */
+    .order-body { max-height: 0; transition: max-height 0.4s ease; background: #fafafa; border-top: 1px solid #eee; }
+    .body-content { padding: 30px; }
+    .section-title { font-size: 0.85rem; text-transform: uppercase; color: #999; margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; }
+
+    /* PRODUCT LIST */
+    .item-row { display: flex; align-items: center; gap: 20px; background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #eee; margin-bottom: 10px; }
+    .item-img { width: 60px; height: 60px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .item-info { flex-grow: 1; }
+    .item-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .item-meta { font-size: 0.85rem; color: #666; margin-bottom: 4px; }
+    .item-price { font-weight: bold; font-size: 1rem; }
+    
+    .badge { display: inline-block; padding: 2px 6px; font-size: 0.65rem; border-radius: 3px; text-transform: uppercase; font-weight: bold; }
+    .badge.purchase { background: #eee; color: #555; }
+    .badge.rent { background: #fff8e1; color: #d4af37; border: 1px solid #ffeeba; }
+
+    .divider { border: 0; border-top: 1px solid #ddd; margin: 30px 0; }
+
+    /* BOTTOM GRID (Shipping & Delivery) */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    .info-box p { margin-bottom: 5px; font-size: 0.95rem; color: #333; }
+
+    /* AGENT CARD (The Highlighted Box) */
+    .agent-card { background: #e3f2fd; border: 1px solid #b8daff; padding: 15px; border-radius: 8px; display: flex; gap: 15px; align-items: center; }
+    .agent-icon { background: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #004085; font-size: 1.2rem; }
+    .phone-link { margin-top: 5px; font-weight: bold; color: #004085; }
+
+    /* MOBILE RESPONSIVE */
+    @media (max-width: 768px) {
+        .labels-row { display: none; }
+        .order-header { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .mobile-hide { display: none; } /* Hide customer name column on mobile */
+        .info-grid { grid-template-columns: 1fr; gap: 20px; }
+    }
+</style>
+{% endblock %}

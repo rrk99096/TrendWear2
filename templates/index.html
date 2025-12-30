@@ -1,0 +1,334 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrendWear | Rent & Buy</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}"> 
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* --- SIDEBAR FILTER STYLES --- */
+        .filter-sidebar {
+            position: fixed; top: 0; left: -320px; /* Hidden by default */
+            width: 300px; height: 100%;
+            background: #1a1a1a; border-right: 1px solid #333;
+            z-index: 2000; transition: 0.3s ease-in-out;
+            display: flex; flex-direction: column;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.5);
+        }
+        .filter-sidebar.active { left: 0; }
+
+        .sidebar-header {
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #333; background: #222;
+        }
+        .sidebar-header h3 { margin: 0; color: #d4af37; font-size: 1.2rem; font-family: 'Playfair Display', serif; }
+        .close-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+
+        .sidebar-form { padding: 20px; flex-grow: 1; overflow-y: auto; color: #ddd; }
+        
+        .filter-group { margin-bottom: 25px; }
+        .filter-group label { display: block; color: #888; margin-bottom: 10px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Sidebar Inputs */
+        .input-wrapper { position: relative; }
+        .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #666; }
+        .sidebar-form input[type="text"], 
+        .sidebar-form select {
+            width: 100%; padding: 12px 12px 12px 35px; 
+            background: #2c2c2c; border: 1px solid #444; color: white; border-radius: 4px;
+            box-sizing: border-box; font-family: 'Poppins', sans-serif;
+        }
+        .sidebar-form select { padding-left: 12px; }
+
+        /* Sidebar Radio Buttons */
+        .radio-group { display: flex; flex-direction: column; gap: 10px; }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; color: #ccc; font-size: 0.95rem; }
+        .radio-label input { accent-color: #d4af37; width: 18px; height: 18px; }
+
+        /* Sidebar Footer */
+        .sidebar-footer { margin-top: auto; display: flex; gap: 10px; align-items: center; padding-top: 20px; border-top: 1px solid #333; }
+        .apply-btn {
+            flex: 1; padding: 12px; background: #d4af37; color: black; border: none; font-weight: bold;
+            border-radius: 4px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .apply-btn:hover { background: #b39226; }
+        .reset-link { color: #888; text-decoration: none; font-size: 0.9rem; padding: 0 10px; }
+        .reset-link:hover { color: white; }
+
+        /* Overlay */
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 1500;
+            display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+
+        /* Filter Toggle Button on Page */
+        .filter-toggle-btn {
+            background: #1e1e1e; color: #d4af37; border: 1px solid #333; 
+            padding: 10px 25px; border-radius: 30px; cursor: pointer; 
+            font-weight: bold; display: inline-flex; align-items: center; gap: 10px; 
+            transition: 0.3s; margin-bottom: 20px; font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+        .filter-toggle-btn:hover { background: #2a2a2a; border-color: #d4af37; }
+    </style>
+</head>
+<body>
+    
+<nav class="navbar" id="navbar">
+    
+    <div class="nav-left">
+        <div class="logo">TREND<span>WEAR</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="{% url 'home' %}">HOME</a></li>
+            <li><a href="{% url 'collection' %}">COLLECTION</a></li>
+            <li><a href="{% url 'rentals' %}">RENTALS</a></li>
+        {% if user.is_authenticated %}
+        
+        {% if user.is_superuser %}
+            <a href="{% url 'admin_dashboard' %}" style="color: #d4af37; font-weight: bold;">Dashboard</a>
+        
+        {% elif user.deliveryboy %}
+            <a href="{% url 'delivery_dashboard' %}" style="color: #007bff; font-weight: bold;">Work App</a>
+        {% endif %}
+        {% endif %}
+        </ul>
+    </div>
+
+    <div class="nav-search-container">
+        <form action="{% url 'home' %}" method="GET" class="search-bar-form">
+            <input type="text" name="q" placeholder="Search for products..." value="{{ request.GET.q }}">
+            <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+
+    <div class="nav-icons">
+        <a href="#" title="Wishlist">
+            <i class="far fa-heart"></i>
+        </a>
+        
+        <a href="{% url 'view_cart' %}" style="position: relative;" title="View Bag">
+            <i class="fas fa-shopping-bag"></i>
+            {% if cart_count > 0 %}
+            <span class="cart-count">{{ cart_count }}</span>
+            {% endif %}
+        </a>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'user_profile' %}" title="My Account" style="margin-left: 15px;">
+            <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #333;"></i>
+        </a>
+    {% else %}
+        <a href="{% url 'login' %}" style="margin-left: 15px; font-weight: bold;">Login</a>
+    {% endif %}
+    </div>
+</nav>
+
+    <div id="filterSidebar" class="filter-sidebar">
+        <div class="sidebar-header">
+            <h3>Filters</h3>
+            <button id="closeFilter" class="close-btn">&times;</button>
+        </div>
+    
+        <form method="GET" action="{% url 'home' %}" class="sidebar-form">
+            
+            <div class="filter-group">
+                <label>Search Keyword</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="e.g. Silk Saree...">
+                </div>
+            </div>
+    
+            <div class="filter-group">
+                <label>Category</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="category" value="" {% if not category_filter %}checked{% endif %}>
+                        <span>All Categories</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="category" value="Men" {% if category_filter == 'Men' %}checked{% endif %}>
+                        <span>Men</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="category" value="Women" {% if category_filter == 'Women' %}checked{% endif %}>
+                        <span>Women</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="category" value="Kids" {% if category_filter == 'Kids' %}checked{% endif %}>
+                        <span>Kids</span>
+                    </label>
+                </div>
+            </div>
+    
+            <div class="filter-group">
+                <label>Shopping Type</label>
+                <select name="type">
+                    <option value="">Show Rent & Buy</option>
+                    <option value="buy" {% if type_filter == 'buy' %}selected{% endif %}>Buy Only</option>
+                    <option value="rent" {% if type_filter == 'rent' %}selected{% endif %}>Rent Only</option>
+                </select>
+            </div>
+    
+            <div class="sidebar-footer">
+                <a href="{% url 'home' %}" class="reset-link">Reset</a>
+                <button type="submit" class="apply-btn">Show Results</button>
+            </div>
+        </form>
+    </div>
+    
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+
+    <header class="hero">
+        <div class="hero-overlay">
+            <div class="hero-content fade-in">
+                <h5>New Collection 2025</h5>
+                <h1>Luxury You Can Wear.<br>Fashion You Can Rent.</h1>
+                <p>Experience the freedom of an infinite wardrobe. Buy the basics, rent the extraordinary.</p>
+                <a href="#collection" class="btn btn-primary">Explore Now</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="collection" class="section-padding">
+        <div class="section-header text-center">
+            <h2>Latest Arrivals</h2>
+            <div class="divider-gold"></div>
+        </div>
+
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button id="filterToggle" class="filter-toggle-btn">
+                    <i class="fas fa-sliders-h"></i> Filter & Search 
+                    {% if search_query or category_filter or type_filter %}
+                        <span style="background: #d4af37; color: black; width: 8px; height: 8px; border-radius: 50%;"></span>
+                    {% endif %}
+                </button>
+
+                {% if search_query %}
+                    <span style="color: #666; font-size: 0.9rem;">Results for: <strong>"{{ search_query }}"</strong></span>
+                {% endif %}
+            </div>
+
+            {% if not products %}
+                <div style="text-align: center; padding: 50px; color: #888;">
+                    <i class="fas fa-search" style="font-size: 40px; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h3>No products found</h3>
+                    <p>Try adjusting your search or filters.</p>
+                    <a href="{% url 'home' %}" style="color: #d4af37; text-decoration: none;">Clear all filters</a>
+                </div>
+            {% else %}
+                <div class="product-grid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="image-container">
+                            
+                            <a href="{% url 'product_detail' product.id %}">
+                                {% if product.thumbnail %}
+                                    <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x400?text=No+Image" alt="No Image">
+                                {% endif %}
+                            </a>
+
+                            {% if product.is_for_rent and product.is_for_sale %}
+                                <div class="badge badge-dual">Rent & Buy</div>
+                            {% elif product.is_for_rent %}
+                                <div class="badge badge-rent">Rent</div>
+                            {% elif product.is_for_sale %}
+                                <div class="badge badge-sale">Sale</div>
+                            {% endif %}
+                            
+                            <div class="overlay-buttons">
+                                <a href="{% url 'product_detail' product.id %}" class="btn-overlay" style="display:block; text-align:center; text-decoration:none;">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="card-details">
+                            <div class="category">{{ product.category }}</div>
+                            
+                            <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                                <h3>{{ product.name }}</h3>
+                            </a>
+                            
+                            <div class="price">
+                                {% with product.variants.first as variant %}
+                                    {% if variant %}
+                                        {% if product.is_for_sale %}
+                                            ${{ variant.sale_price }}
+                                        {% elif product.is_for_rent %}
+                                            <div class="rent-price">${{ variant.rent_price_per_day }} <span>/ day</span></div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span style="font-size: 0.9rem; color: #999;">Price on Request</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <footer>
+        <div class="text-center">
+            <h2 class="logo-footer">TREND<span>WEAR</span></h2>
+            <p class="copyright">© 2025 TrendWear. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 1. Existing Top Search Toggle
+        function toggleSearch() {
+            const overlay = document.getElementById('search-overlay');
+            overlay.classList.toggle('active');
+        }
+
+        // 2. Navbar Scroll Effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 3. SIDEBAR FILTER LOGIC
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('filterSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleBtn = document.getElementById('filterToggle');
+            const closeBtn = document.getElementById('closeFilter');
+
+            function openSidebar() {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+
+            if(toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+            if(closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if(overlay) overlay.addEventListener('click', closeSidebar);
+        });
+    </script>
+</body>
+</html>

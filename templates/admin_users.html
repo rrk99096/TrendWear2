@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .admin-container { max-width: 1000px; margin: 40px auto; }
+    .user-card { background: #fff; padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .role-badge { background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+    .role-badge.driver { background: #e3f2fd; color: #0d47a1; }
+</style>
+
+<div class="container admin-container">
+    <h2 style="margin-bottom: 30px;">User Management</h2>
+
+    <h4 style="margin-bottom: 15px; border-bottom: 2px solid #000; display: inline-block;">Delivery Staff</h4>
+    <div style="background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; margin-bottom: 40px;">
+        {% for driver in drivers %}
+        <div class="user-card">
+            <div>
+                <strong>{{ driver.user.first_name }} {{ driver.user.last_name }}</strong>
+                <div style="font-size: 0.85rem; color: #666;">{{ driver.user.email }}</div>
+            </div>
+            <div style="text-align: right;">
+                <span class="role-badge driver">Driver</span>
+                <div style="font-size: 0.8rem; margin-top: 4px;">{{ driver.vehicle_number }}</div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 20px;">No drivers found.</div>
+        {% endfor %}
+    </div>
+
+    <h4 style="margin-bottom: 15px; border-bottom: 2px solid #000; display: inline-block;">Customers</h4>
+    <div style="background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;">
+        {% for customer in customers %}
+        <div class="user-card">
+            <div>
+                <strong>{{ customer.first_name }} {{ customer.last_name }}</strong>
+                <div style="font-size: 0.85rem; color: #666;">{{ customer.email }}</div>
+            </div>
+            <div>
+                <span class="role-badge">Customer</span>
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 20px;">No customers found.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

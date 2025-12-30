@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="collection-hero">
+    <div class="hero-overlay-bg"></div> <div class="hero-content fade-in-up">
+        <h1>The Collection</h1>
+        <div class="divider-gold"></div>
+        <p>Curated styles for every occasion. Rent the look, own the moment.</p>
+    </div>
+</div>
+
+<div class="container main-wrapper">
+    
+    <div class="category-grid">
+        
+        <a href="{% url 'view_category' 'Men' %}" class="cat-card">
+            <div class="cat-img-wrapper">
+                {% if men_cover and men_cover.thumbnail %}
+                    <img src="{{ men_cover.thumbnail.url }}" alt="Men's Collection">
+                {% else %}
+                    <div class="no-img-placeholder"></div> 
+                {% endif %}
+            </div>
+            <div class="cat-overlay">
+                <h3>Men</h3>
+                <span class="link-text">View Collection <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'view_category' 'Women' %}" class="cat-card featured">
+            <div class="cat-img-wrapper">
+                {% if women_cover and women_cover.thumbnail %}
+                    <img src="{{ women_cover.thumbnail.url }}" alt="Women's Collection">
+                {% else %}
+                    <div class="no-img-placeholder"></div>
+                {% endif %}
+            </div>
+            <div class="cat-overlay">
+                <h3>Women</h3>
+                <span class="link-text">View Collection <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'view_category' 'Kids' %}" class="cat-card">
+            <div class="cat-img-wrapper">
+                {% if kids_cover and kids_cover.thumbnail %}
+                    <img src="{{ kids_cover.thumbnail.url }}" alt="Kids' Collection">
+                {% else %}
+                    <div class="no-img-placeholder"></div>
+                {% endif %}
+            </div>
+            <div class="cat-overlay">
+                <h3>Kids</h3>
+                <span class="link-text">View Collection <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+    </div>
+
+    <div class="style-section">
+        <h2 class="section-title">Explore by Style</h2>
+        <p style="color: #666; margin-bottom: 25px;">Find exactly what you are looking for.</p>
+        
+        <div class="pill-grid">
+            {% if sub_cats %}
+                {% for item in sub_cats %}
+                    {% if item.sub_category %}
+                    <a href="{% url 'view_category' item.sub_category %}" class="style-pill">
+                        {{ item.sub_category }} 
+                        <span class="count">{{ item.count }}</span>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p style="color: #999; font-style: italic;">No specific styles found yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="split-banner-container">
+        <a href="{% url 'home' %}?type=rent" class="split-card rent-card">
+            <div class="split-content">
+                <i class="far fa-calendar-alt icon-large"></i>
+                <h3>Rent the Runway</h3>
+                <p>Designer wear for special occasions at a fraction of the cost.</p>
+                <span class="btn-action">Browse Rentals</span>
+            </div>
+        </a>
+
+        <a href="{% url 'home' %}?type=buy" class="split-card buy-card">
+            <div class="split-content">
+                <i class="fas fa-shopping-bag icon-large"></i>
+                <h3>Forever Yours</h3>
+                <p>Build your permanent wardrobe with our premium essentials.</p>
+                <span class="btn-action">Shop Now</span>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+<style>
+    /* 1. RESET & LAYOUT */
+    body { 
+        background-color: #ffffff; /* FORCE WHITE BACKGROUND */
+        color: #1a1a1a; 
+    }
+    .main-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+    /* 2. HERO SECTION */
+    .collection-hero {
+        text-align: center; 
+        padding: 20px 10px 10px; 
+        background: #f9f9f9; /* Very light grey for separation */
+        border-bottom: 1px solid #e0e0e0;
+        margin-top: -20px; /* Adjust spacing near navbar */
+    }
+    .hero-content h1 { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 3.5rem; 
+        margin: 0; 
+        color: #1a1a1a; /* Dark Text */
+        letter-spacing: 2px;
+    }
+    .divider-gold { 
+        width: 60px; height: 3px; background: #d4af37; margin: 20px auto; 
+    }
+    .hero-content p { color: #666; font-size: 1.1rem; letter-spacing: 1px; }
+
+    /* 3. CATEGORY GRID (Equal Columns) */
+    .category-grid {
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); /* 3 Equal Columns */
+        gap: 20px;
+        height: 500px; 
+        margin-bottom: 80px;
+        margin-top: 40px;
+    }
+    .cat-card {
+        position: relative; overflow: hidden; border-radius: 4px; 
+        text-decoration: none; display: block; 
+        border: 1px solid #e0e0e0; /* Light Border */
+    }
+    .cat-img-wrapper { height: 100%; width: 100%; background: #f4f4f4; }
+    .cat-img-wrapper img { 
+        width: 100%; height: 100%; 
+        object-fit: cover; object-position: top center; 
+        transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    }
+    
+    .no-img-placeholder { 
+        width: 100%; height: 100%; background: #eee; 
+        display: flex; align-items: center; justify-content: center; color: #999; 
+    }
+    .no-img-placeholder::after { content: 'No Image'; }
+
+    /* Hover Effects */
+    .cat-card:hover .cat-img-wrapper img { transform: scale(1.05); }
+    .cat-card:hover { border-color: #d4af37; }
+
+    .cat-overlay {
+        position: absolute; bottom: 0; left: 0; width: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        padding: 40px 30px; box-sizing: border-box;
+    }
+    .cat-overlay h3 { margin: 0; font-size: 2.5rem; font-family: 'Playfair Display', serif; color: #fff; }
+    .link-text { 
+        font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; 
+        margin-top: 10px; display: inline-block; color: #d4af37; font-weight: bold;
+    }
+
+    /* 4. STYLE PILLS (Light) */
+    .style-section { text-align: center; margin-bottom: 80px; }
+    .section-title { font-size: 2rem; margin-bottom: 10px; font-family: 'Playfair Display', serif; color: #1a1a1a; }
+
+    .pill-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+    .style-pill {
+        border: 1px solid #ddd; padding: 12px 25px; border-radius: 50px; 
+        background: #ffffff; color: #333; /* Light Mode Colors */
+        text-decoration: none; font-weight: 500; transition: 0.3s;
+        display: flex; align-items: center; gap: 10px; font-size: 0.95rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .style-pill:hover { 
+        background: #1a1a1a; color: #fff; border-color: #1a1a1a; transform: translateY(-3px); 
+    }
+    .style-pill .count { 
+        background: #f0f0f0; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; color: #666; 
+    }
+    .style-pill:hover .count { background: #333; color: #d4af37; }
+
+    /* 5. SPLIT BANNER */
+    .split-banner-container { display: flex; gap: 30px; }
+    .split-card { 
+        flex: 1; height: 300px; text-decoration: none; border-radius: 4px; 
+        position: relative; overflow: hidden; border: 1px solid #e0e0e0;
+        display: flex; align-items: center; justify-content: center; text-align: center;
+        transition: 0.3s;
+    }
+    
+    /* Rent Side: Light Cream */
+    .rent-card { background: #fffcf5; } 
+    .rent-card h3 { color: #1a1a1a; }
+    .rent-card p { color: #666; }
+    .rent-card .btn-action { color: #1a1a1a; border-color: #1a1a1a; }
+
+    .buy-card { background: #fffcf5; } 
+    .buy-card h3 { color: #1a1a1a; }
+    .buy-card p { color: #666; }
+    .buy-card .btn-action { color: #1a1a1a; border-color: #1a1a1a; }
+    
+    .rent-card:hover { background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .buy-card:hover { background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+    .split-content { padding: 40px; z-index: 2; }
+    .icon-large { font-size: 3rem; margin-bottom: 20px; color: #d4af37; }
+    .split-card h3 { font-size: 1.8rem; margin: 0 0 10px 0; font-family: 'Playfair Display', serif; }
+    .split-card p { margin: 0 0 25px 0; line-height: 1.5; }
+
+    .btn-action { 
+        padding: 10px 25px; border: 1px solid; 
+        text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; transition: 0.3s;
+    }
+    .split-card:hover .btn-action { background: #d4af37; color: #000; border-color: #d4af37; }
+
+    /* MOBILE RESPONSIVE */
+    @media (max-width: 768px) {
+        .category-grid { grid-template-columns: 1fr; height: auto; gap: 10px; }
+        .cat-card { height: 250px; }
+        .split-banner-container { flex-direction: column; height: auto; }
+        .split-card { height: auto; padding: 30px 0; }
+        .hero-content h1 { font-size: 2.5rem; }
+    }
+    
+    /* ANIMATION */
+    .fade-in-up { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; transform: translateY(20px); }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Force the navbar to look "scanned" (white bg, dark text) because page is white
+        const navbar = document.getElementById('navbar');
+        if(navbar) {
+            navbar.classList.add('scanned');
+        }
+    });
+</script>
+
+{% endblock %}

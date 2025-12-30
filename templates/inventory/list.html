@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container" style="max-width: 1100px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="font-weight: 800; margin: 0;">Inventory Manager</h2>
+        <a href="{% url 'add_product' %}" class="btn-main">+ Add New Product</a>
+    </div>
+
+    <div class="inventory-stack">
+        {% for product in products %}
+        <details class="product-dropdown">
+            
+            <summary class="dropdown-header">
+                <div class="ph-left">
+                    <div class="img-thumb">
+                        {% if product.thumbnail %}
+                            <img src="{{ product.thumbnail.url }}">
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>{{ product.name }}</strong>
+                        <span style="color: #888; font-size: 0.85rem; margin-left: 10px;">{{ product.category }}</span>
+                    </div>
+                </div>
+                <div class="ph-right">
+                    <span class="badge">{{ product.variants.count }} Variants</span>
+                    <i class="fas fa-chevron-down arrow-icon"></i>
+                </div>
+            </summary>
+
+            <div class="dropdown-body">
+                
+                <table class="variant-table">
+                    <thead>
+                        <tr>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Stock</th>
+                            <th>Sale Price ($)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for variant in product.variants.all %}
+                        <tr>
+                            <form action="{% url 'update_stock' variant.id %}" method="POST">
+                                {% csrf_token %}
+                                <td><span class="size-badge">{{ variant.size }}</span></td>
+                                <td>{{ variant.color }}</td>
+                                <td>
+                                    <input type="number" name="stock" value="{{ variant.stock_quantity }}" class="input-edit" style="width: 70px;">
+                                </td>
+                                <td>
+                                    <input type="number" name="price" value="{{ variant.sale_price }}" step="0.01" class="input-edit" style="width: 90px;">
+                                </td>
+                                <td style="display: flex; gap: 10px;">
+                                    <button type="submit" class="btn-icon save" title="Save Changes"><i class="fas fa-check"></i></button>
+                                    <a href="{% url 'delete_variant' variant.id %}" class="btn-icon delete" onclick="return confirm('Delete this variant?')" title="Delete Variant"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </form>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="add-variant-box">
+                    <strong>Add Variant:</strong>
+                    <form action="{% url 'add_variant' product.id %}" method="POST" class="inline-form">
+                        {% csrf_token %}
+                        <select name="size" required>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="XXL">XXL</option>
+                        </select>
+                        <input type="text" name="color" placeholder="Color" required>
+                        <input type="number" name="stock" placeholder="Qty" required style="width: 70px;">
+                        <input type="number" name="price" placeholder="Price" step="0.01" required style="width: 90px;">
+                        <button type="submit" class="btn-black">Add</button>
+                    </form>
+                </div>
+
+                <div class="product-footer">
+                    <a href="{% url 'delete_product' product.id %}" class="text-danger" onclick="return confirm('WARNING: This will delete the product and ALL its variants. Continue?')">
+                        <i class="fas fa-trash-alt"></i> Delete Entire Product
+                    </a>
+                </div>
+
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+
+</div>
+
+<style>
+    /* Main Layout */
+    .inventory-stack { display: flex; flex-direction: column; gap: 15px; }
+    
+    /* Accordion Styling */
+    .product-dropdown { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; transition: 0.2s; }
+    .product-dropdown[open] { border-color: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    /* Summary Header */
+    .dropdown-header { list-style: none; padding: 15px 20px; background: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .dropdown-header::-webkit-details-marker { display: none; } /* Hide default triangle */
+    
+    .ph-left { display: flex; align-items: center; gap: 15px; }
+    .ph-right { display: flex; align-items: center; gap: 15px; }
+    
+    .img-thumb { width: 40px; height: 40px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .arrow-icon { transition: transform 0.3s; color: #999; }
+    details[open] .arrow-icon { transform: rotate(180deg); }
+
+    /* Expanded Content */
+    .dropdown-body { border-top: 1px solid #eee; padding: 20px; background: #fdfdfd; }
+
+    /* Table Styling */
+    .variant-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .variant-table th { text-align: left; font-size: 0.8rem; color: #888; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+    .variant-table td { padding: 10px 0; border-bottom: 1px solid #f4f4f4; vertical-align: middle; }
+    
+    /* Inputs & Buttons */
+    .input-edit { padding: 6px; border: 1px solid #ddd; border-radius: 4px; }
+    .btn-icon { border: none; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .btn-icon.save { background: #e8f5e9; color: #2e7d32; }
+    .btn-icon.save:hover { background: #c8e6c9; }
+    .btn-icon.delete { background: #ffebee; color: #c62828; }
+    .btn-icon.delete:hover { background: #ffcdd2; }
+
+    /* Add Variant Section */
+    .add-variant-box { background: #f4f7f6; padding: 15px; border-radius: 6px; display: flex; align-items: center; gap: 15px; }
+    .inline-form { display: flex; gap: 10px; flex: 1; }
+    .inline-form input, .inline-form select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    
+    .btn-main { background: #000; color: #fff; padding: 10px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; }
+    .btn-black { background: #000; color: #fff; border: none; padding: 0 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    
+    .text-danger { color: #dc3545; font-size: 0.85rem; text-decoration: underline; margin-top: 10px; display: inline-block; }
+    .size-badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+    .badge { background: #eee; padding: 4px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
+</style>
+{% endblock %}

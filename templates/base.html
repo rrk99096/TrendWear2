@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrendWear | Luxury Fashion</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+    --primary-color: #0f5132;
+    --accent-color: #d4af37;
+    --text-dark: #1a1a1a;
+    --bg-light: #f9f9f9;
+    --white: #ffffff;
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Poppins', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    background-color: var(--bg-light); 
+    color: var(--text-dark); 
+    font-family: var(--font-body); 
+    overflow-x: hidden;
+    padding-top: 100px; /* Push content down below fixed navbar */
+}
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+ul { list-style: none; }
+
+/* =========================================
+   2. NAVBAR (MATCHING IMAGE)
+   ========================================= */
+.navbar {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 40px; 
+    height: 90px;
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+    background: transparent; 
+}
+
+/* 1. LEFT GROUP: Logo + Links */
+.nav-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 50px; /* Space between Logo and Links */
+}
+
+.logo { 
+    font-size: 2rem; font-weight: 700; letter-spacing: 1px; 
+    font-family: 'Playfair Display', serif; color: #1a1a1a;
+}
+.logo span { color: #d4af37; }
+
+.nav-links { display: flex; list-style: none; gap: 35px; }
+.nav-links a { 
+    font-weight: 600; font-size: 0.85rem; text-transform: uppercase; 
+    letter-spacing: 1px; text-decoration: none; color: #1a1a1a; 
+}
+.nav-links a:hover { color: #d4af37; }
+
+/* 2. CENTER: Wide Search Bar */
+.nav-search-container {
+    flex-grow: 1; /* Fills the middle space */
+    display: flex;
+    justify-content: flex-end; /* Pushes bar toward the right/icons */
+    padding: 0 60px; 
+}
+
+.search-bar-form {
+    position: relative; 
+    width: 100%; 
+    max-width: 100%; /* Width of the grey pill */
+}
+
+.search-bar-form input {
+    width: 100%;
+    padding: 12px 25px;
+    border-radius: 50px; 
+    border: 1px solid transparent; 
+    background-color: #f4f4f4; /* Grey Background */
+    color: #333;
+    font-size: 0.95rem; 
+    outline: none; 
+    transition: 0.3s;
+}
+.search-bar-form input:focus {
+    background-color: #fff;
+    border-color: #ddd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.search-bar-form button {
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #555; font-size: 1.1rem; cursor: pointer;
+}
+
+/* 3. RIGHT: Icons */
+.nav-icons { 
+    display: flex; 
+    align-items: center; 
+    gap: 30px; /* Space between icons */
+}
+
+.nav-icons a { 
+    font-size: 1.3rem; 
+    color: #1a1a1a; 
+    position: relative; 
+    display: flex; align-items: center; text-decoration: none;
+}
+.nav-icons a:hover { color: #d4af37; }
+
+.cart-count {
+    position: absolute; top: -6px; right: -8px; 
+    background: #1a1a1a; color: white; 
+    font-size: 0.65rem; font-weight: bold; height: 18px; width: 18px;
+    border-radius: 50%; display: flex; justify-content: center; align-items: center;
+}
+.navbar.scrolled {
+    background: #ffffff; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-bottom: none;
+    height: 80px; /* Optional: Make it slightly smaller when scrolling */
+}
+
+/* Change Text Colors to Black on Scroll */
+.navbar.scrolled .logo { color: #1a1a1a; }
+.navbar.scrolled .nav-links a { color: #1a1a1a; }
+.navbar.scrolled .nav-links a:hover { color: #d4af37; }
+.navbar.scrolled .nav-icons a { color: #1a1a1a; }
+.navbar.scrolled .nav-icons a:hover { color: #d4af37; }
+
+/* Change Search Bar to Grey on Scroll */
+.navbar.scrolled .search-bar-form input {
+    background-color: #f4f4f4; 
+    color: #333;
+}
+.navbar.scrolled .search-bar-form input::placeholder { color: #888; }
+.navbar.scrolled .search-bar-form button { color: #555; }
+
+</style>
+
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+    
+    <div class="nav-left">
+        <div class="logo">TREND<span>WEAR</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="{% url 'home' %}">HOME</a></li>
+            <li><a href="{% url 'collection' %}">COLLECTION</a></li>
+            <li><a href="{% url 'rentals' %}">RENTALS</a></li>
+        {% if user.is_authenticated %}
+        
+        {% if user.is_superuser %}
+            <a href="{% url 'admin_dashboard' %}" style="color: #d4af37; font-weight: bold;">Dashboard</a>
+        
+        {% elif user.deliveryboy %}
+            <a href="{% url 'delivery_dashboard' %}" style="color: #007bff; font-weight: bold;">Work Dashboard</a>
+        {% endif %}
+        {% endif %}
+        </ul>
+    </div>
+
+    <div class="nav-search-container">
+        <form action="{% url 'home' %}" method="GET" class="search-bar-form">
+            <input type="text" name="q" placeholder="Search for products..." value="{{ request.GET.q }}">
+            <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+
+    <div class="nav-icons">
+        <a href="#" title="Wishlist">
+            <i class="far fa-heart"></i>
+        </a>
+        
+        <a href="{% url 'view_cart' %}" style="position: relative;" title="View Bag">
+            <i class="fas fa-shopping-bag"></i>
+            {% if cart_count > 0 %}
+            <span class="cart-count">{{ cart_count }}</span>
+            {% endif %}
+        </a>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'user_profile' %}" title="My Account" style="margin-left: 15px;">
+            <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #333;"></i>
+        </a>
+    {% else %}
+        <a href="{% url 'login' %}" style="margin-left: 15px; font-weight: bold;">Login</a>
+    {% endif %}
+    </div>
+</nav>
+
+    {% if messages %}
+        <div class="container" style="margin-top: 20px; max-width: 1400px; padding: 0 40px;">
+            {% for message in messages %}
+                <div style="padding: 15px; background: #fff; border-left: 4px solid #1a1a1a; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <footer style="background: #111; color: white; padding: 60px 40px; margin-top: 80px;">
+        <div class="text-center">
+            <h2 class="logo-footer" style="color:white; font-family:'Playfair Display'; font-size:2rem;">TREND<span style="color:#d4af37;">WEAR</span></h2>
+            <p style="color:#666; margin-top:10px;">© 2025 TrendWear. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'script.js' %}"></script>
+
+</body>
+</html>

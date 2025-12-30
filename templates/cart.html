@@ -1,0 +1,221 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shopping Bag | TrendWear</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* RESET & BASE STYLES */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #f8f9fa; color: #1a1a1a; padding-top: 70px; /* Space for fixed nav */ }
+        a { text-decoration: none; color: inherit; transition: 0.2s; }
+        ul { list-style: none; }
+
+        /* SIMPLIFIED NAVBAR */
+        .simple-nav {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: #fff; border-bottom: 1px solid #eee;
+            padding: 0 40px; height: 70px;
+            display: flex; align-items: center; justify-content: space-between;
+            z-index: 1000;
+        }
+        .nav-logo { font-size: 1.5rem; font-weight: 800; color: #1a1a1a; letter-spacing: -1px; }
+        .nav-links { display: flex; gap: 30px; font-size: 0.95rem; font-weight: 600; }
+        .nav-links a:hover { color: #d4af37; }
+        .logout-btn { color: #d9534f; }
+
+        /* CONTAINER */
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+
+        /* CART LAYOUT */
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+        .page-title { font-size: 2rem; font-weight: 800; }
+        
+        .cart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; align-items: start; }
+
+        /* LEFT COLUMN: Items */
+        .cart-items { background: #fff; border-radius: 8px; border: 1px solid #eee; padding: 25px; }
+        
+        .labels-row { display: flex; padding-bottom: 15px; border-bottom: 1px solid #eee; margin-bottom: 20px; color: #999; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+
+        .cart-item-row { display: flex; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #f5f5f5; margin-bottom: 20px; }
+        .cart-item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+        /* Product Details */
+        .product-col { flex: 2; display: flex; gap: 20px; }
+        .img-box { width: 90px; height: 90px; background: #f9f9f9; border-radius: 6px; overflow: hidden; border: 1px solid #eee; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .info-box .name { font-size: 1.05rem; font-weight: 700; margin-bottom: 5px; color: #1a1a1a; }
+        .info-box .meta { font-size: 0.85rem; color: #666; margin-bottom: 8px; }
+        .remove-link { color: #888; font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
+        .remove-link:hover { color: #d9534f; }
+
+        /* Badges */
+        .badge { display: inline-block; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .badge.purchase { background: #f0f0f0; color: #555; }
+        .badge.rent { background: #fff8e1; color: #d4af37; border: 1px solid #ffeeba; }
+        .rent-dates { font-size: 0.75rem; color: #d4af37; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+
+        /* Quantity */
+        .qty-col { flex: 1; display: flex; justify-content: center; }
+        .qty-input { width: 60px; padding: 8px; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; }
+
+        /* Price */
+        .price-col { flex: 1; text-align: right; font-weight: 700; font-size: 1.1rem; }
+
+        /* RIGHT COLUMN: Summary */
+        .cart-summary { background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee; position: sticky; top: 90px; }
+        .summary-card h3 { margin-top: 0; margin-bottom: 25px; font-size: 1.3rem; font-weight: 700; }
+        
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.95rem; color: #555; }
+        .summary-row.total { font-weight: 800; font-size: 1.4rem; color: #000; margin-top: 20px; padding-top: 20px; border-top: 2px solid #f5f5f5; }
+
+        .btn-checkout { display: block; width: 100%; background: #000; color: white; text-align: center; padding: 18px; border-radius: 6px; font-weight: 600; font-size: 1rem; margin-top: 25px; transition: transform 0.2s; }
+        .btn-checkout:hover { background: #333; transform: translateY(-2px); }
+
+        .continue-link { display: block; text-align: center; margin-top: 20px; font-size: 0.9rem; color: #666; }
+        .continue-link:hover { color: #000; }
+
+        /* EMPTY STATE */
+        .empty-cart { text-align: center; padding: 80px 20px; background: #fff; border-radius: 8px; border: 1px solid #eee; }
+        .empty-cart i { font-size: 4rem; color: #eee; margin-bottom: 20px; }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 768px) {
+            .simple-nav { padding: 0 20px; }
+            .cart-grid { grid-template-columns: 1fr; gap: 30px; }
+            .labels-row { display: none; }
+            .cart-item-row { flex-wrap: wrap; }
+            .product-col { width: 100%; margin-bottom: 15px; }
+            .qty-col { justify-content: flex-start; }
+            .price-col { text-align: left; margin-top: 10px; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="simple-nav">
+        <a href="{% url 'home' %}" class="nav-logo">TrendWear.</a>
+        
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'my_orders' %}">Orders</a>
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <h1 class="page-title">Shopping Bag</h1>
+            <span style="color: #666;">{{ cart_items|length }} Items</span>
+        </div>
+
+        {% if cart_items %}
+        <div class="cart-grid">
+            
+            <div class="cart-items">
+                <div class="labels-row">
+                    <div style="flex: 2;">Product Details</div>
+                    <div style="flex: 1; text-align: center;">Qty</div>
+                    <div style="flex: 1; text-align: right;">Total</div>
+                </div>
+
+                {% for item in cart_items %}
+                <div class="cart-item-row">
+                    
+                    <div class="product-col">
+                        <div class="img-box">
+                            {% if item.product.thumbnail %}
+                                <img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}">
+                            {% else %}
+                                <div class="no-img"></div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="info-box">
+                            <div class="name">{{ item.product.name }}</div>
+                            <div class="meta">Size: {{ item.variant.size }} | Color: {{ item.variant.color }}</div>
+                            
+                            {% if item.is_rental %}
+                                <div class="badge rent">Rental</div>
+                                <div class="rent-dates">
+                                    <i class="far fa-calendar-alt"></i> 
+                                    {{ item.rental_start_date|date:"M d" }} - {{ item.rental_end_date|date:"M d" }}
+                                </div>
+                            {% else %}
+                                <div class="badge purchase">Purchase</div>
+                            {% endif %}
+                            
+                            <a href="{% url 'remove_from_cart' item.id %}" class="remove-link">Remove</a>
+                        </div>
+                    </div>
+
+                    <div class="qty-col">
+                        <form action="{% url 'update_cart' item.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="qty-input" onchange="this.form.submit()">
+                        </form>
+                    </div>
+
+                    <div class="price-col">
+                        ${{ item.total_cost }}
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary">
+                <div class="summary-card">
+                    <h3>Order Summary</h3>
+                    
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>${{ total }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping Estimate</span>
+                        <span>Calculated at checkout</span>
+                    </div>
+                    
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span>${{ total }}</span>
+                    </div>
+
+                    <a href="{% url 'checkout' %}" class="btn-checkout">
+                        Proceed to Checkout <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                    </a>
+                    
+                    <a href="{% url 'home' %}" class="continue-link">
+                        <i class="fas fa-arrow-left"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        {% else %}
+            <div class="empty-cart">
+                <i class="fas fa-shopping-bag"></i>
+                <h3>Your bag is empty</h3>
+                <p style="color: #666; margin-bottom: 30px;">Looks like you haven't made your choice yet.</p>
+                <a href="{% url 'home' %}" class="btn-checkout" style="max-width: 250px; margin: 0 auto; display: inline-block;">Start Shopping</a>
+            </div>
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

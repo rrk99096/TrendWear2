@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; background: #fff; }
+        .header { background: #000; color: #fff; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .order-info { margin: 30px 0; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .order-info h3 { margin: 0 0 5px; color: #000; }
+        .order-info p { margin: 0; color: #666; font-size: 14px; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th { text-align: left; background: #f9f9f9; padding: 10px; border-bottom: 2px solid #ddd; font-size: 12px; text-transform: uppercase; color: #888; }
+        td { padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .total-row td { border-top: 2px solid #333; font-weight: bold; font-size: 16px; color: #000; }
+
+        .footer { text-align: center; font-size: 12px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+        .btn { display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 4px; margin-top: 20px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="header">
+            <h1>TrendWear</h1>
+        </div>
+
+        <div class="order-info">
+            <h3>Invoice / Receipt</h3>
+            <p>Order #{{ order.id }}</p>
+            <p>Date: {{ order.created_at|date:"M d, Y" }}</p>
+            <p>Status: <span style="color: green; font-weight: bold;">Delivered</span></p>
+        </div>
+
+        <p>Hi {{ order.user.first_name }},</p>
+        <p>Thank you for shopping with TrendWear. Here is the summary of your order which has been delivered successfully.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th style="text-align: center;">Type</th>
+                    <th style="text-align: right;">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.sale_items.all %}
+                <tr>
+                    <td>
+                        <strong>{{ item.variant.product.name }}</strong><br>
+                        <small style="color:#888;">Size: {{ item.variant.size }} | Qty: {{ item.quantity }}</small>
+                    </td>
+                    <td style="text-align: center;">Buy</td>
+                    <td style="text-align: right;">${{ item.total_price }}</td>
+                </tr>
+                {% endfor %}
+
+                {% for rent in order.rent_items.all %}
+                <tr>
+                    <td>
+                        <strong>{{ rent.variant.product.name }}</strong><br>
+                        <small style="color:#888;">Rental: {{ rent.start_date|date:"M d" }} - {{ rent.end_date|date:"M d" }}</small>
+                    </td>
+                    <td style="text-align: center;">Rent</td>
+                    <td style="text-align: right;">${{ rent.total_price }}</td>
+                </tr>
+                {% endfor %}
+
+                <tr class="total-row">
+                    <td colspan="2">Total Paid</td>
+                    <td style="text-align: right;">${{ order.total_price }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="background: #fdfdfd; padding: 15px; border-left: 4px solid #000;">
+            <p style="margin: 0; font-size: 13px;"><strong>Shipping To:</strong><br>
+            {{ order.user.first_name }} {{ order.user.last_name }}<br>
+            {{ order.user.email }}</p>
+        </div>
+
+        <div class="footer">
+            <p>Need to return a rental? Visit your account dashboard.</p>
+            <p>&copy; 2025 TrendWear Inc.</p>
+        </div>
+    </div>
+</body>
+</html>

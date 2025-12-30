@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="category-header">
+    <div class="header-content fade-in-up">
+        <h1>{{ category_name }}</h1>
+        <div class="divider-gold"></div>
+        <p>Found {{ products.count }} items in this collection</p>
+    </div>
+</div>
+
+<div class="container main-wrapper">
+    
+    {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                
+                <div class="image-container">
+                    <a href="{% url 'product_detail' product.id %}">
+                        {% if product.thumbnail %}
+                            <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="no-img-placeholder">No Image</div>
+                        {% endif %}
+                    </a>
+
+                    {% if product.is_for_rent and product.is_for_sale %}
+                        <div class="badge badge-dual">Rent & Buy</div>
+                    {% elif product.is_for_rent %}
+                        <div class="badge badge-rent">Rent</div>
+                    {% elif product.is_for_sale %}
+                        <div class="badge badge-sale">Sale</div>
+                    {% endif %}
+                    
+                    <div class="overlay-buttons">
+                        <a href="{% url 'product_detail' product.id %}" class="btn-overlay">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-details">
+                    <div class="category-tag">{{ product.sub_category }}</div>
+                    
+                    <a href="{% url 'product_detail' product.id %}" class="product-link">
+                        <h3>{{ product.name }}</h3>
+                    </a>
+                    
+                    <div class="price">
+                        {% with product.variants.first as variant %}
+                            {% if variant %}
+                                {% if product.is_for_sale %}
+                                    ${{ variant.sale_price }}
+                                {% else %}
+                                    <span class="rent-price">${{ variant.rent_price_per_day }} <span class="per-day">/ day</span></span>
+                                {% endif %}
+                            {% else %}
+                                <span class="price-request">Price on Request</span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-tshirt"></i>
+            <h3>Coming Soon</h3>
+            <p>We haven't added any items to {{ category_name }} yet.</p>
+            <a href="{% url 'home' %}" class="btn-link">Return Home</a>
+        </div>
+    {% endif %}
+
+</div>
+
+<style>
+    /* 1. RESET & LAYOUT */
+    body { background-color: #ffffff; color: #1a1a1a; }
+    .main-wrapper { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+    /* 2. HEADER SECTION */
+    .category-header {
+        background: #f9f9f9; 
+        padding: 100px 20px 60px; /* Top padding accounts for navbar */
+        text-align: center; 
+        border-bottom: 1px solid #e0e0e0;
+        margin-top: -20px; /* Pull closer to navbar */
+    }
+    .header-content h1 { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 3.5rem; 
+        margin: 0; 
+        text-transform: capitalize; 
+        color: #1a1a1a;
+    }
+    .divider-gold { 
+        width: 60px; height: 3px; background: #d4af37; margin: 20px auto; 
+    }
+    .header-content p { color: #666; font-size: 1.1rem; letter-spacing: 1px; }
+
+    /* 3. STRICT GRID SYSTEM */
+    .product-grid {
+        display: grid;
+        /* Equal width columns, min 260px wide */
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+        gap: 40px 20px;
+        margin-top: 40px;
+    }
+
+    /* 4. PRODUCT CARD */
+    .product-card {
+        display: flex; flex-direction: column;
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+    .product-card:hover { transform: translateY(-5px); }
+
+    /* IMAGE STYLING */
+    .image-container {
+        width: 100%;
+        height: 380px; /* Fixed height for uniformity */
+        background: #f4f4f4;
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+        border: 1px solid #eee;
+    }
+    .image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; 
+        object-position: top center; /* Focus on face/upper body */
+        transition: transform 0.6s ease;
+    }
+    .product-card:hover .image-container img { transform: scale(1.05); }
+
+    .no-img-placeholder {
+        width: 100%; height: 100%; display: flex; 
+        align-items: center; justify-content: center; color: #999;
+    }
+
+    /* BADGES */
+    .badge {
+        position: absolute; top: 10px; left: 10px;
+        padding: 6px 12px; font-size: 0.7rem; font-weight: bold; 
+        text-transform: uppercase; color: white; border-radius: 2px; letter-spacing: 1px;
+    }
+    .badge-rent { background: #1a1a1a; } /* Black */
+    .badge-sale { background: #1a1a1a; } /* Black */
+    .badge-dual { background: #d4af37; color: #000; } /* Gold */
+
+    /* OVERLAY BUTTONS */
+    .overlay-buttons {
+        position: absolute; bottom: 0; left: 0; width: 100%;
+        padding: 15px; 
+        background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+        opacity: 0; transform: translateY(10px); transition: 0.3s;
+        display: flex; justify-content: center;
+    }
+    .product-card:hover .overlay-buttons { opacity: 1; transform: translateY(0); }
+    
+    .btn-overlay {
+        background: #ffffff; color: #1a1a1a; padding: 12px 25px; 
+        text-decoration: none; font-weight: 600; font-size: 0.8rem; 
+        text-transform: uppercase; border-radius: 2px; width: 100%; text-align: center;
+        transition: 0.3s;
+    }
+    .btn-overlay:hover { background: #d4af37; color: #000; }
+
+    /* 5. TEXT DETAILS */
+    .card-details { padding-top: 15px; text-align: center; }
+    
+    .category-tag { 
+        color: #888; font-size: 0.8rem; text-transform: uppercase; 
+        margin-bottom: 5px; letter-spacing: 1px; 
+    }
+    
+    .product-link { text-decoration: none; color: inherit; }
+    
+    .product-card h3 { 
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.1rem; margin: 5px 0 10px; font-weight: 500; 
+        color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
+    
+    .price { font-weight: 600; font-size: 1.1rem; color: #1a1a1a; }
+    .rent-price { color: #1a1a1a; }
+    .rent-price .per-day { font-size: 0.8rem; color: #666; font-weight: normal; }
+    .price-request { font-size: 0.9rem; color: #999; }
+
+    /* 6. EMPTY STATE */
+    .empty-state { 
+        text-align: center; padding: 80px 20px; color: #999; 
+        border: 1px dashed #ddd; border-radius: 8px; margin-top: 40px;
+    }
+    .empty-state i { font-size: 50px; margin-bottom: 20px; color: #ddd; }
+    .btn-link { 
+        color: #d4af37; font-weight: bold; text-decoration: none; 
+        border-bottom: 2px solid #d4af37; padding-bottom: 2px;
+    }
+    
+    /* ANIMATION */
+    .fade-in-up { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; transform: translateY(20px); }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const navbar = document.getElementById('navbar');
+        if(navbar) {
+            navbar.classList.add('scanned');
+        }
+    });
+</script>
+
+{% endblock %}

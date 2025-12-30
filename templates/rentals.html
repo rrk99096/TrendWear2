@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="rental-hero">
+    <div class="hero-overlay-light">
+        <div class="rental-hero-content fade-in-up">
+            <h5>The Rental Edit</h5>
+            <h1>Wear the Look.<br>Return the Rest.</h1>
+            <p>Access a dream closet of designer styles for a fraction of the retail price. Dry cleaning and insurance included.</p>
+            <div class="hero-btns">
+                <a href="#browse" class="btn btn-black">Explore Collection</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="process-section">
+    <div class="container">
+        <div class="process-grid">
+            <div class="process-step">
+                <div class="icon-circle"><i class="far fa-calendar-check"></i></div>
+                <h3>1. Book It</h3>
+                <p>Select your size and dates.</p>
+            </div>
+            <div class="process-step">
+                <div class="icon-circle"><i class="fas fa-tshirt"></i></div>
+                <h3>2. Wear It</h3>
+                <p>Arrives dry-cleaned & ready.</p>
+            </div>
+            <div class="process-step">
+                <div class="icon-circle"><i class="fas fa-box-open"></i></div>
+                <h3>3. Return It</h3>
+                <p>Pack it up and drop it off.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="browse" class="section-padding">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <div class="section-header text-center">
+            <h2>Trending Rentals</h2>
+            <div class="divider-gold"></div>
+            <p style="color: #666; margin-bottom: 40px;">Curated looks available for rent this week</p>
+        </div>
+
+        <div class="rental-grid-wrapper" id="rental-grid">
+            {% for product in featured_rentals %}
+            <div class="rental-card fade-in">
+                <div class="card-image">
+                    <a href="{% url 'product_detail' product.id %}">
+                        {% if product.thumbnail %}
+                            <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="no-img">No Image</div>
+                        {% endif %}
+                    </a>
+                    <span class="rent-badge">RENTAL</span>
+                    <div class="card-overlay">
+                        <a href="{% url 'product_detail' product.id %}" class="btn-quick-rent">Rent Now</a>
+                    </div>
+                </div>
+
+                <div class="card-info">
+                    <div class="card-cat">{{ product.category }}</div>
+                    <a href="{% url 'product_detail' product.id %}">
+                        <h4>{{ product.name }}</h4>
+                    </a>
+                    <div class="card-price">
+                        {% with product.variants.first as variant %}
+                            {% if variant %}
+                                ${{ variant.rent_price_per_day }} <span class="per-day">/ day</span>
+                            {% else %}
+                                <span>Check Price</span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #999; background: #f9f9f9;">
+                    <p>No rentals available right now.</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center" style="margin-top: 60px;">
+            {% if featured_rentals.has_next %}
+                <button id="loadMoreBtn" class="btn btn-black" style="cursor: pointer; border:none;">View More</button>
+            {% else %}
+                <span style="color: #999;">End of Collection</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+
+<div class="container" style="max-width: 1000px; margin: 80px auto; padding: 0 20px;">
+    <div class="trust-grid">
+        <div class="trust-item">
+            <h4>No Hidden Fees</h4>
+            <p>The price you see is the price you pay. Insurance included.</p>
+        </div>
+        <div class="trust-item">
+            <h4>Fit Guarantee</h4>
+            <p>Doesn't fit? Let us know within 24 hours for credit.</p>
+        </div>
+        <div class="trust-item">
+            <h4>Easy Returns</h4>
+            <p>Simply place the item in the pre-paid bag and drop it off.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 1. HERO SECTION */
+    .rental-hero {
+        position: relative; height: 60vh; margin-top: -20px;
+        background: url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1950&q=80') center/cover no-repeat;
+    }
+    .hero-overlay-light {
+        width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.4);
+        display: flex; align-items: center; padding-left: 10%;
+    }
+    .rental-hero-content { max-width: 600px; color: #000; }
+    .rental-hero-content h5 { color: #d4af37; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-bottom: 10px; }
+    .rental-hero-content h1 { font-family: 'Playfair Display', serif; font-size: 3.5rem; line-height: 1.1; margin-bottom: 20px; color: #1a1a1a; }
+    .rental-hero-content p { font-size: 1.1rem; color: #333; margin-bottom: 30px; font-weight: 500; }
+    
+    .btn-black { background: #1a1a1a; color: #fff; padding: 12px 30px; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: inline-block; }
+    .btn-black:hover { background: #333; }
+
+    /* 2. PROCESS SECTION */
+    .process-section { padding: 60px 0; background: #fafafa; border-bottom: 1px solid #eee; }
+    .process-grid { display: flex; justify-content: center; gap: 60px; text-align: center; flex-wrap: wrap; }
+    .process-step { max-width: 250px; }
+    .icon-circle { 
+        width: 60px; height: 60px; background: #fff; border: 1px solid #ddd; 
+        border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        margin: 0 auto 15px; font-size: 1.5rem; color: #d4af37; 
+    }
+    .process-step h3 { font-weight: bold; margin-bottom: 5px; font-size: 1.1rem; color: #1a1a1a; }
+    .process-step p { color: #666; font-size: 0.9rem; }
+
+    /* 3. STRICT GRID SYSTEM */
+    .rental-grid-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Smart Responsive Columns */
+        gap: 30px;
+        margin-top: 40px;
+        width: 100%;
+    }
+
+    /* CARD CONTAINER */
+    .rental-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+    }
+
+
+
+    /* IMAGE - FIXED HEIGHT (Prevents Stretching) */
+    .card-image {
+        width: 100%;
+        height: 400px; /* <--- HARD FIXED HEIGHT */
+        background: #f4f4f4;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Crops image cleanly */
+        object-position: top center;
+        display: block; /* Removes bottom whitespace */
+    }
+
+    /* BADGE */
+    .rent-badge {
+        position: absolute; top: 10px; left: 10px; z-index: 5;
+        background: #000; color: #fff;
+        padding: 5px 10px; font-size: 11px; font-weight: bold; text-transform: uppercase;
+    }
+
+    /* HOVER BUTTON */
+    .card-overlay {
+        position: absolute; bottom: 0; left: 0; width: 100%;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.45);
+        opacity: 0; transition: 0.3s;
+    }
+    .rental-card:hover .card-overlay { opacity: 1; }
+    
+    .btn-quick-rent {
+        display: block; width: 100%; padding: 10px 0;
+        background: transparent; color: #000000ff; text-align: center; 
+        text-decoration: none; font-weight: bold; text-transform: uppercase;
+    }
+
+    /* TEXT CONTENT */
+    .card-info { padding: 15px; text-align: center; }
+    .card-cat { font-size: 11px; text-transform: uppercase; color: #999; margin-bottom: 5px; letter-spacing: 1px; }
+    .card-info h4 { 
+        font-size: 16px; margin: 0 0 5px; color: #000; 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
+    .card-price { font-size: 18px; font-weight: 700; color: #000; }
+    .per-day { font-size: 12px; font-weight: normal; color: #666; }
+
+    /* =========================
+       5. RESPONSIVE
+       ========================= */
+    @media (max-width: 768px) {
+        .rental-grid-wrapper { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .card-image { height: 280px; } /* Smaller images on mobile */
+        .process-grid { flex-direction: column; gap: 30px; }
+        .trust-grid { grid-template-columns: 1fr; }
+        .rental-hero { height: 50vh; }
+        .rental-hero-content h1 { font-size: 2.5rem; }
+    }
+
+    .trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; text-align: center; padding: 40px; background: #f9f9f9; border-radius: 4px; }
+    .trust-item h4 { font-size: 1.1rem; margin-bottom: 8px; color: #1a1a1a; font-weight: bold; }
+    .trust-item p { font-size: 0.9rem; color: #666; }
+
+    /* 5. RESPONSIVE */
+  
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let page = 1;
+        const loadBtn = document.getElementById('loadMoreBtn');
+        const grid = document.getElementById('rental-grid');
+
+        if (loadBtn) {
+            loadBtn.addEventListener('click', function() {
+                page++; // Increment page number
+                
+                // Fetch next page via AJAX
+                fetch(`?page=${page}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 1. Loop through new products and build HTML
+                    data.data.forEach(product => {
+                        const html = `
+                            <div class="rental-card fade-in">
+                                <div class="card-image">
+                                    <a href="${product.url}">
+                                        ${product.image ? `<img src="${product.image}" alt="${product.name}">` : `<div class="no-img">No Image</div>`}
+                                    </a>
+                                    <span class="rent-badge">RENTAL</span>
+                                    <div class="card-overlay">
+                                        <a href="${product.url}" class="btn-quick-rent">Rent Now</a>
+                                    </div>
+                                </div>
+                                <div class="card-info">
+                                    <div class="card-cat">${product.category}</div>
+                                    <a href="${product.url}">
+                                        <h4>${product.name}</h4>
+                                    </a>
+                                    <div class="card-price">
+                                        $${product.price} <span class="per-day">/ day</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.insertAdjacentHTML('beforeend', html);
+                    });
+
+                    // 2. Hide button if no more pages
+                    if (!data.has_next) {
+                        loadBtn.style.display = 'none';
+                        const endMsg = document.createElement('span');
+                        endMsg.style.color = '#999';
+                        endMsg.innerText = 'End of Collection';
+                        loadBtn.parentNode.appendChild(endMsg);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+    });
+</script>
+
+{% endblock %}

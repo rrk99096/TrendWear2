@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container" style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="font-weight: 800; margin: 0;">Order #{{ order.id }}</h2>
+            <p style="color: #666; font-size: 0.9rem;">Placed on {{ order.created_at|date:"M d, Y" }}</p>
+        </div>
+        <a href="{% url 'admin_orders' %}" style="color: #666;">&larr; Back to List</a>
+    </div>
+
+    <div class="order-grid">
+        
+        <div class="main-column">
+            
+            {% if purchased_items %}
+            <div class="card">
+                <h4 class="card-title"><i class="fas fa-shopping-bag"></i> Purchased Items</h4>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Details</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in purchased_items %}
+                        <tr>
+                            <td style="display: flex; gap: 10px; align-items: center;">
+                                <div class="img-box">
+                                    {% if item.variant.product.thumbnail %}
+                                        <img src="{{ item.variant.product.thumbnail.url }}">
+                                    {% else %}
+                                        <div style="width:100%; height:100%; background:#eee;"></div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <strong>{{ item.variant.product.name }}</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge">{{ item.variant.size }}</span>
+                                <span style="color: #666; font-size: 0.85rem;">{{ item.variant.color }}</span>
+                            </td>
+                            <td>x{{ item.quantity }}</td>
+                            <td>${{ item.total_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if rented_items %}
+            <div class="card" style="border-left: 4px solid #007bff;">
+                <h4 class="card-title" style="color: #007bff;"><i class="fas fa-clock"></i> Rented Items</h4>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Rental Dates</th>
+                            <th>Qty</th>
+                            <th>Fee</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rent in rented_items %}
+                        <tr>
+                            <td style="display: flex; gap: 10px; align-items: center;">
+                                <div class="img-box">
+                                    {% if rent.variant.product.thumbnail %}
+                                        <img src="{{ rent.variant.product.thumbnail.url }}">
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <strong>{{ rent.variant.product.name }}</strong>
+                                    <br>
+                                    <span class="badge" style="background:#e3f2fd; color:#0d47a1;">RENTAL</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.85rem;">
+                                    <strong>{{ rent.start_date|date:"M d" }}</strong> to <strong>{{ rent.end_date|date:"M d" }}</strong>
+                                </div>
+                                <small style="color: #dc3545;">
+                                    {% if rent.status == 'Overdue' %}Overdue!{% endif %}
+                                </small>
+                            </td>
+                            <td>x{{ rent.quantity }}</td>
+                            <td>${{ rent.total_price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if not purchased_items and not rented_items %}
+            <div class="card">
+                <p style="color: #999; text-align: center; padding: 20px;">
+                    No items found in this order. <br>
+                    <small>(Check 'SaleOrder' and 'RentBooking' table for parent_order_id={{ order.id }})</small>
+                </p>
+            </div>
+            {% endif %}
+
+            <div class="card" style="text-align: right;">
+                <h4 class="card-title">Payment Summary</h4>
+                <div style="display: inline-block; text-align: right; min-width: 200px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="color: #666;">Subtotal:</span>
+                        <span>${{ order.total_price }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <span style="font-weight: 800; font-size: 1.1rem;">Total Paid:</span>
+                        <span style="font-weight: 800; font-size: 1.1rem;">${{ order.total_price }}</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="side-column">
+            
+            <div class="card highlight-card">
+                <h4 class="card-title">Update Status</h4>
+                <form method="POST">
+                    {% csrf_token %}
+                    <label style="font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block;">Current Status</label>
+                    
+                    {% if order.delivery_info %}
+                        <select name="status" class="status-select">
+                            <option value="Pending" {% if order.delivery_info.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Out for Delivery" {% if order.delivery_info.status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
+                            <option value="Delivered" {% if order.delivery_info.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                            <option value="Failed" {% if order.delivery_info.status == 'Failed' %}selected{% endif %}>Failed</option>
+                        </select>
+                    {% else %}
+                        <p style="color:red; font-size:0.8rem;">No Delivery Record Found. Updating will create one.</p>
+                        <select name="status" class="status-select">
+                            <option value="Pending">Pending</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                        </select>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn-update">Update Order</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h4 class="card-title">Customer Details</h4>
+                <div class="info-row">
+                    <i class="fas fa-user"></i>
+                    <div>
+                        <strong>{{ order.user.first_name }} {{ order.user.last_name }}</strong>
+                        <div style="font-size: 0.85rem; color: #666;">{{ order.user.email }}</div>
+                        {% if order.user.phone_number %}
+                            <div style="font-size: 0.85rem; color: #666;">{{ order.user.phone_number }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                
+                <div class="info-row">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <strong>Shipping Address</strong>
+                        {% if order.user.delivery_profile %}
+                            <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">
+                                {{ order.user.delivery_profile.address }}<br>
+                                {{ order.user.delivery_profile.city }}, {{ order.user.delivery_profile.state }} - {{ order.user.delivery_profile.zip_code }}
+                            </div>
+                        {% else %}
+                            <div style="font-size: 0.85rem; color: #999;">No address profile found.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+    /* Layout */
+    .order-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    
+    /* Cards */
+    .card { background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 20px; }
+    .card-title { margin: 0 0 20px; font-size: 0.95rem; text-transform: uppercase; color: #888; font-weight: 700; letter-spacing: 0.5px; }
+    .highlight-card { border-top: 4px solid #000; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    /* Tables */
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th { text-align: left; color: #888; font-size: 0.8rem; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+    .items-table td { padding: 15px 0; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
+    
+    /* Images & Badges */
+    .img-box { width: 40px; height: 40px; background: #eee; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .img-box img { width: 100%; height: 100%; object-fit: cover; }
+    .badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+
+    /* Forms */
+    .status-select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-size: 1rem; background: #fff; }
+    .btn-update { width: 100%; background: #000; color: #fff; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-update:hover { background: #333; }
+
+    /* Utility */
+    .info-row { display: flex; gap: 15px; align-items: flex-start; }
+    .info-row i { color: #ccc; margin-top: 3px; }
+
+    @media (max-width: 768px) {
+        .order-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
